@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>HR Management</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f5f6fa;
+}
+
+
+.navbar {
+    background: #212529;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-left span {
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+.nav-left a {
+    color: #ccc;
+    margin-right: 15px;
+    text-decoration: none;
+}
+
+.nav-right input {
+    padding: 5px;
+}
+
+.nav-right button {
+    padding: 5px 10px;
+    background: #343a40;
+    color: white;
+    border: 1px solid #666;
+}
+
+
+.container {
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.add-btn {
+    background: #4c6ef5;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #f1f3f5;
+}
+
+.edit {
+    background: #ffc107;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background: white;
+    width: 500px;
+    margin: 100px auto;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: #4c6ef5;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-body {
+    padding: 15px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.form-row input, select {
+    width: 100%;
+    padding: 6px;
+}
+
+.modal-footer {
+    text-align: right;
+    padding: 10px;
+}
+
+.save {
+    background: #2f9e44;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+}
+
+.cancel {
+    background: #868e96;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+}
+</style>
+</head>
+
+<body>
+
+
+<div class="navbar">
+    <div class="nav-left">
+        <span>HR Management</span>
+        <a href="#">Home</a>
+        <a href="#">Contact</a>
+    </div>
+    <div class="nav-right">
+        <input type="text" placeholder="Search...">
+        <button>Search</button>
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="header">
+        <h2>Employee</h2>
+        <button class="add-btn" onclick="openModal()">+ Add</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th>
+                <th>Phone</th><th>Position</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="employeeTable">
+            <tr>
+                <td>1</td><td>Fatima Beatriz</td><td>Fatima@gmail.com</td>
+                <td>0985674321</td><td>Staff</td>
+                <td>
+                    <button class="edit">Edit</button>
+                    <button class="delete">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>New Employee</span>
+            <span style="cursor:pointer" onclick="closeModal()">✖</span>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-row">
+                <input id="name" placeholder="Name">
+                <input id="email" placeholder="Email">
+            </div>
+            <div class="form-row">
+                <input id="phone" placeholder="Phone">
+                <select id="position">
+                    <option>-- Select Position --</option>
+                    <option>Staff</option>
+                    <option>Manager</option>
+                    <option>CEO</option>
+                </select>
+            </div>
+            <div>
+                Sex:
+                <label><input type="radio" name="sex"> Male</label>
+                <label><input type="radio" name="sex"> Female</label>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="save" onclick="addEmployee()">Save</button>
+            <button class="cancel" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let id = 2;
+
+function openModal() {
+    document.getElementById("modal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function addEmployee() {
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+    let phone = document.getElementById("phone").value;
+    let position = document.getElementById("position").value;
+
+    if(name === "" || email === "") {
+        alert("Vui lòng nhập đầy đủ thông tin!");
+        return;
+    }
+
+    let row = `
+        <tr>
+            <td>${id++}</td>
+            <td>${name}</td>
+            <td>${email}</td>
+            <td>${phone}</td>
+            <td>${position}</td>
+            <td>
+                <button class="edit">Edit</button>
+                <button class="delete">Delete</button>
+            </td>
+        </tr>
+    `;
+    document.getElementById("employeeTable").innerHTML += row;
+    closeModal();
+}
+</script>
+
+</body>
+</html>
