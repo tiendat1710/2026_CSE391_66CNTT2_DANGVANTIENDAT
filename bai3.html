@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Điểm Sinh Viên</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%; /* Hoặc để auto tùy vào nội dung */
+            font-family: "Times New Roman", Times, serif; /* Phông chữ thường dùng trong văn bản học thuật */
+            color: #000;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Định dạng các ô tiêu đề chính */
+        th {
+            font-weight: bold;
+            background-color: #fff;
+        }
+
+        /* Tạo kiểu cho các hàng tiêu đề (Code, Name, Q1...) */
+        .header-row td {
+            font-weight: bold;
+        }
+
+        /* Tùy chỉnh độ rộng cột để cân đối */
+        td:nth-child(1) { width: 80px; } /* Cột Code */
+        td:nth-child(2) { width: 100px; } /* Cột Name */
+        
+        /* Hiệu ứng khi di chuột qua hàng (tùy chọn để dễ nhìn hơn) */
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2" rowspan="2">Student</th>
+            <th colspan="4">Exam</th>
+            <th colspan="4">2nd Exam</th>
+            <th colspan="2" rowspan="2">Final Grade</th>
+        </tr>
+        <tr>
+            <th>Q1</th>
+            <th>Q2</th>
+            <th>Q3</th>
+            <th rowspan="2">Grade</th>
+            <th>Q1</th>
+            <th>Q2</th>
+            <th>Q3</th>
+            <th rowspan="2">Grade</th>
+        </tr>
+        <tr class="header-row">
+            <td>Code</td>
+            <td>Name</td>
+            <td>8</td>
+            <td>7</td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>NR</td>
+            <td>R</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>80549061</td>
+            <td>John</td>
+            <td>70%</td>
+            <td>100%</td>
+            <td>100%</td>
+            <td>17.6</td>
+            <td colspan="4"></td>
+            <td>17.6</td>
+            <td>18</td>
+        </tr>
+        <tr>
+            <td>80549062</td>
+            <td>Mary</td>
+            <td>10%</td>
+            <td>50%</td>
+            <td>50%</td>
+            <td>6.8</td>
+            <td>100%</td>
+            <td>100%</td>
+            <td>50%</td>
+            <td>16.5</td>
+            <td>16.5</td>
+            <td>17</td>
+        </tr>
+        <tr>
+            <td>80549063</td>
+            <td>Claire</td>
+            <td colspan="4"></td>
+            <td>50%</td>
+            <td>50%</td>
+            <td>50%</td>
+            <td>10.0</td>
+            <td>10.0</td>
+            <td>10</td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
