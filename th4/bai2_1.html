@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài 2.1 – Form Đăng Ký</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e2ddd8;
+    --accent: #2563eb;
+    --err: #dc2626;
+    --ok: #16a34a;
+    --err-bg: #fef2f2;
+    --ok-bg: #f0fdf4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; display: grid; place-items: center; padding: 40px 16px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px; width: 100%; max-width: 520px; }
+  .page-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Field */
+  .field { margin-bottom: 18px; position: relative; }
+  .field label { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.4px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .required::after { content: ' *'; color: var(--err); font-size: 0.7rem; }
+
+  input[type="text"], input[type="email"], input[type="tel"], input[type="password"] {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem;
+    background: var(--bg); color: var(--ink); outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus { border-color: var(--accent); background: #fff; }
+  input.valid   { border-color: var(--ok); background: var(--ok-bg); }
+  input.invalid { border-color: var(--err); background: var(--err-bg); }
+
+  .pass-wrap { position: relative; }
+  .pass-wrap input { padding-right: 44px; }
+  .toggle-pass {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--muted);
+    padding: 4px; display: grid; place-items: center; transition: color 0.15s;
+  }
+  .toggle-pass:hover { color: var(--ink); }
+
+  .error-msg {
+    display: none; color: var(--err); font-size: 0.78rem;
+    margin-top: 5px; padding: 4px 0 0 2px;
+    animation: shake 0.3s ease;
+  }
+  .error-msg.show { display: block; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+  /* Radio & Checkbox */
+  .radio-group, .checkbox-group { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .radio-item, .chk-item { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: 0.875rem; }
+  .radio-item input, .chk-item input { width: auto; margin: 0; accent-color: var(--accent); cursor: pointer; }
+
+  /* Submit */
+  .btn-submit {
+    width: 100%; padding: 12px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+    margin-top: 8px;
+  }
+  .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-submit:active { transform: none; }
+
+  /* Success */
+  .success-box {
+    display: none;
+    text-align: center; padding: 48px 32px;
+    animation: fadeIn 0.4s ease;
+  }
+  .success-box.show { display: block; }
+  .success-icon { font-size: 3.5rem; margin-bottom: 14px; }
+  .success-box h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .success-box p { color: var(--muted); font-size: 0.9rem; }
+  .success-box .name-display { font-family: 'IBM Plex Mono', monospace; color: var(--ok); font-size: 1.1rem; font-weight: 600; margin: 12px 0; display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Form -->
+  <div id="form-section">
+    <p class="page-label">CSE391 · Bài 2.1</p>
+    <h1>Đăng Ký Tài Khoản</h1>
+    <p class="subtitle">Điền đầy đủ thông tin bên dưới để tạo tài khoản.</p>
+
+    <form id="reg-form" novalidate>
+
+      <!-- Họ và tên -->
+      <div class="field">
+        <label class="required" for="f-name">Họ và tên</label>
+        <input type="text" id="f-name" placeholder="Nguyễn Văn A">
+        <span class="error-msg" id="err-name"></span>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label class="required" for="f-email">Email</label>
+        <input type="email" id="f-email" placeholder="example@email.com">
+        <span class="error-msg" id="err-email"></span>
+      </div>
+
+      <!-- SĐT -->
+      <div class="field">
+        <label class="required" for="f-phone">Số điện thoại</label>
+        <input type="tel" id="f-phone" placeholder="0901234567">
+        <span class="error-msg" id="err-phone"></span>
+      </div>
+
+      <hr>
+
+      <!-- Mật khẩu -->
+      <div class="field">
+        <label class="required" for="f-pass">Mật khẩu</label>
+        <div class="pass-wrap">
+          <input type="password" id="f-pass" placeholder="Tối thiểu 8 ký tự">
+          <button type="button" class="toggle-pass" onclick="togglePass('f-pass',this)" title="Hiện/ẩn mật khẩu">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <span class="error-msg" id="err-pass"></span>
+      </div>
+
+      <!-- Xác nhận mật khẩu -->
+      <div class="field">
+        <label class="required" for="f-pass2">Xác nhận mật khẩu</label>
+        <div class="pass-wrap">
+          <input type="password" id="f-pass2" placeholder="Nhập lại mật khẩu">
+          <button type="button" class="toggle-pass" onclick="togglePass('f-pass2',this)" title="Hiện/ẩn mật khẩu">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <span class="error-msg" id="err-pass2"></span>
+      </div>
+
+      <hr>
+
+      <!-- Giới tính -->
+      <div class="field">
+        <label class="required">Giới tính</label>
+        <div class="radio-group" id="f-gender">
+          <label class="radio-item"><input type="radio" name="gender" value="Nam"> Nam</label>
+          <label class="radio-item"><input type="radio" name="gender" value="Nữ"> Nữ</label>
+          <label class="radio-item"><input type="radio" name="gender" value="Khác"> Khác</label>
+        </div>
+        <span class="error-msg" id="err-gender"></span>
+      </div>
+
+      <!-- Điều khoản -->
+      <div class="field">
+        <div class="checkbox-group">
+          <label class="chk-item">
+            <input type="checkbox" id="f-terms">
+            Tôi đồng ý với <a href="#" style="color:var(--accent)">Điều khoản dịch vụ</a>
+          </label>
+        </div>
+        <span class="error-msg" id="err-terms"></span>
+      </div>
+
+      <button type="submit" class="btn-submit">Đăng ký ngay →</button>
+    </form>
+  </div>
+
+  <!-- Success -->
+  <div class="success-box" id="success-box">
+    <div class="success-icon">🎉</div>
+    <h2>Đăng ký thành công!</h2>
+    <span class="name-display" id="success-name"></span>
+    <p>Tài khoản của bạn đã được tạo. Chào mừng bạn!</p>
+  </div>
+</div>
+
+<script>
+  // ── Regex ──
+  const RX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const RX_PHONE = /^0[0-9]{9}$/;
+  const RX_PASS  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  const RX_NAME  = /^[a-zA-ZÀ-ỹ\s]+$/;
+
+  // ── Helpers ──
+  function showError(id, msg) {
+    const el = document.getElementById('err-' + id);
+    el.textContent = msg;
+    el.classList.add('show');
+    const inp = document.getElementById('f-' + id);
+    if (inp && inp.tagName === 'INPUT') { inp.classList.remove('valid'); inp.classList.add('invalid'); }
+  }
+  function clearError(id) {
+    const el = document.getElementById('err-' + id);
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+    const inp = document.getElementById('f-' + id);
+    if (inp && inp.tagName === 'INPUT') inp.classList.remove('invalid');
+  }
+  function markValid(id) {
+    clearError(id);
+    const inp = document.getElementById('f-' + id);
+    if (inp && inp.tagName === 'INPUT') inp.classList.add('valid');
+  }
+
+  // ── Validate từng trường ──
+  function validateName() {
+    const v = document.getElementById('f-name').value.trim();
+    if (!v)           { showError('name', 'Họ tên không được để trống.'); return false; }
+    if (v.length < 3) { showError('name', 'Họ tên phải có ít nhất 3 ký tự.'); return false; }
+    if (!RX_NAME.test(v)) { showError('name', 'Họ tên chỉ được chứa chữ cái và khoảng trắng.'); return false; }
+    markValid('name'); return true;
+  }
+  function validateEmail() {
+    const v = document.getElementById('f-email').value.trim();
+    if (!v)               { showError('email', 'Email không được để trống.'); return false; }
+    if (!RX_EMAIL.test(v)) { showError('email', 'Email không đúng định dạng (vd: abc@domain.com).'); return false; }
+    markValid('email'); return true;
+  }
+  function validatePhone() {
+    const v = document.getElementById('f-phone').value.trim();
+    if (!v)               { showError('phone', 'Số điện thoại không được để trống.'); return false; }
+    if (!RX_PHONE.test(v)) { showError('phone', 'SĐT phải gồm 10 chữ số và bắt đầu bằng 0.'); return false; }
+    markValid('phone'); return true;
+  }
+  function validatePass() {
+    const v = document.getElementById('f-pass').value;
+    if (!v)                { showError('pass', 'Mật khẩu không được để trống.'); return false; }
+    if (!RX_PASS.test(v)) { showError('pass', 'Mật khẩu ≥ 8 ký tự, có chữ hoa, chữ thường và số.'); return false; }
+    markValid('pass'); return true;
+  }
+  function validatePass2() {
+    const p1 = document.getElementById('f-pass').value;
+    const p2 = document.getElementById('f-pass2').value;
+    if (!p2)       { showError('pass2', 'Vui lòng nhập lại mật khẩu.'); return false; }
+    if (p1 !== p2) { showError('pass2', 'Mật khẩu xác nhận không khớp.'); return false; }
+    markValid('pass2'); return true;
+  }
+  function validateGender() {
+    const checked = document.querySelector('input[name="gender"]:checked');
+    if (!checked) { showError('gender', 'Vui lòng chọn giới tính.'); return false; }
+    clearError('gender'); return true;
+  }
+  function validateTerms() {
+    if (!document.getElementById('f-terms').checked) {
+      showError('terms', 'Bạn phải đồng ý với điều khoản dịch vụ.'); return false;
+    }
+    clearError('terms'); return true;
+  }
+
+  // ── Toggle password ──
+  function togglePass(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.style.color = inp.type === 'text' ? 'var(--accent)' : 'var(--muted)';
+  }
+
+  // ── Submit handler ──
+  document.getElementById('reg-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Dùng & để ĐẢM BẢO tất cả hàm đều được gọi (không short-circuit)
+    const ok = validateName() & validateEmail() & validatePhone()
+             & validatePass() & validatePass2() & validateGender() & validateTerms();
+    if (!ok) return;
+
+    // Thành công
+    const name = document.getElementById('f-name').value.trim();
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-name').textContent   = name;
+    document.getElementById('success-box').classList.add('show');
+  });
+
+  // ── Blur validate ──
+  document.getElementById('f-name').addEventListener('blur',  validateName);
+  document.getElementById('f-email').addEventListener('blur', validateEmail);
+  document.getElementById('f-phone').addEventListener('blur', validatePhone);
+  document.getElementById('f-pass').addEventListener('blur',  validatePass);
+  document.getElementById('f-pass2').addEventListener('blur', validatePass2);
+  document.querySelectorAll('input[name="gender"]').forEach(r => r.addEventListener('change', validateGender));
+  document.getElementById('f-terms').addEventListener('change', validateTerms);
+
+  // ── Input → clear error ──
+  ['name','email','phone','pass','pass2'].forEach(id => {
+    document.getElementById('f-' + id).addEventListener('input', () => clearError(id));
+  });
+</script>
+</body>
+</html>

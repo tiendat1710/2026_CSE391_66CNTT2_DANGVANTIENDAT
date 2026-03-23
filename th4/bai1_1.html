@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài 1.1 – Bảng Điểm Sinh Viên</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e2ddd8;
+    --accent: #c0392b;
+    --accent-light: #fdf3f2;
+    --green: #1a7a4a;
+    --green-bg: #edfaf3;
+    --blue: #1a4fa0;
+    --blue-bg: #edf2fd;
+    --yellow: #8a6000;
+    --yellow-bg: #fdf9ed;
+    --red: #c0392b;
+    --red-bg: #fdf3f2;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* Header */
+  .page-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 2rem; font-weight: 700;
+    letter-spacing: -1px; margin-bottom: 4px;
+  }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* Input row */
+  .input-row {
+    display: flex; gap: 12px; align-items: flex-end; margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.grow { flex: 1; }
+  label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; color: var(--muted); text-transform: uppercase; }
+  input[type="text"], input[type="number"] {
+    padding: 9px 13px; border: 1.5px solid var(--border);
+    border-radius: 7px; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9rem; background: var(--bg); color: var(--ink);
+    outline: none; transition: border-color 0.15s;
+    min-width: 0;
+  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: #bbb; }
+
+  .btn-add {
+    padding: 10px 22px; background: var(--accent); color: #fff;
+    border: none; border-radius: 7px; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.875rem; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap; align-self: flex-end;
+  }
+  .btn-add:hover { opacity: 0.88; }
+  .btn-add:active { transform: scale(0.97); }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 11px 16px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    background: #faf9f7; border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  thead th:not(:first-child):not(:nth-child(2)) { text-align: center; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #faf9f7; }
+  tbody tr.low { background: #fffbeb !important; }
+  tbody tr.low:hover { background: #fef3c7 !important; }
+  td { padding: 12px 16px; font-size: 0.875rem; text-align: center; }
+  td:nth-child(2) { text-align: left; font-weight: 500; }
+
+  .num { font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 4px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .badge-gioi  { background: var(--green-bg);  color: var(--green); }
+  .badge-kha   { background: var(--blue-bg);   color: var(--blue); }
+  .badge-tb    { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-yeu   { background: var(--red-bg);    color: var(--red); }
+
+  .btn-del {
+    padding: 4px 12px; border-radius: 5px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.75rem; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-del:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+  /* Stats */
+  .stats {
+    display: flex; gap: 24px; margin-top: 16px;
+    padding: 14px 20px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 0.85rem;
+  }
+  .stats span { color: var(--muted); }
+  .stats strong { color: var(--ink); font-family: 'IBM Plex Mono', monospace; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 40px; color: var(--muted); font-size: 0.875rem; }
+
+  /* Low indicator */
+  .low td:first-child { border-left: 3px solid #f59e0b; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  tbody tr { animation: fadeIn 0.2s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+  <p class="page-label">CSE391 · Bài 1.1</p>
+  <h1>Bảng Điểm Sinh Viên</h1>
+  <p class="subtitle">Quản lý danh sách điểm — thêm và xóa sinh viên.</p>
+
+  <div class="input-row">
+    <div class="field grow">
+      <label>Họ và tên</label>
+      <input type="text" id="inp-name" placeholder="Nguyễn Văn A">
+    </div>
+    <div class="field">
+      <label>Điểm (0–10)</label>
+      <input type="number" id="inp-score" placeholder="8.5" min="0" max="10" step="0.1" style="width:110px">
+    </div>
+    <button class="btn-add" onclick="addStudent()">+ Thêm</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50px">STT</th>
+          <th>Họ tên</th>
+          <th>Điểm</th>
+          <th>Xếp loại</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty" class="empty">Chưa có sinh viên nào. Hãy thêm bên trên!</div>
+  </div>
+
+  <div class="stats" id="stats" style="display:none">
+    <div>Tổng số SV: <strong id="st-count">0</strong></div>
+    <div>Điểm trung bình: <strong id="st-avg">—</strong></div>
+    <div>Cao nhất: <strong id="st-max">—</strong></div>
+    <div>Thấp nhất: <strong id="st-min">—</strong></div>
+  </div>
+</div>
+
+<script>
+  // ── Dữ liệu ──
+  let students = [];
+
+  // ── Hàm xếp loại ──
+  function rank(s) {
+    if (s >= 8.5) return ['Giỏi',   'badge-gioi'];
+    if (s >= 7.0) return ['Khá',    'badge-kha'];
+    if (s >= 5.0) return ['Trung bình', 'badge-tb'];
+    return            ['Yếu',    'badge-yeu'];
+  }
+
+  // ── Thêm sinh viên ──
+  function addStudent() {
+    const nameEl  = document.getElementById('inp-name');
+    const scoreEl = document.getElementById('inp-score');
+    const name    = nameEl.value.trim();
+    const score   = parseFloat(scoreEl.value);
+
+    if (!name)                           { alert('Vui lòng nhập họ tên!'); nameEl.focus(); return; }
+    if (isNaN(score)||score<0||score>10) { alert('Điểm phải là số từ 0 đến 10!'); scoreEl.focus(); return; }
+
+    students.push({ id: Date.now(), name, score });
+    nameEl.value = ''; scoreEl.value = '';
+    nameEl.focus();
+    renderTable();
+  }
+
+  // ── Xóa sinh viên (Event Delegation) ──
+  document.getElementById('tbody').addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-id]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    students = students.filter(s => s.id !== id);
+    renderTable();
+  });
+
+  // ── Render bảng ──
+  function renderTable() {
+    const tbody = document.getElementById('tbody');
+    const empty = document.getElementById('empty');
+    const stats = document.getElementById('stats');
+    tbody.innerHTML = '';
+
+    if (!students.length) {
+      empty.style.display = 'block';
+      stats.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    stats.style.display = 'flex';
+
+    students.forEach((s, i) => {
+      const [label, cls] = rank(s.score);
+      const tr = document.createElement('tr');
+      if (s.score < 5) tr.classList.add('low');
+      tr.innerHTML = `
+        <td class="num" style="color:#bbb">${i + 1}</td>
+        <td>${escHtml(s.name)}</td>
+        <td><span class="num" style="font-size:1rem">${s.score.toFixed(1)}</span></td>
+        <td><span class="badge ${cls}">${label}</span></td>
+        <td><button class="btn-del" data-id="${s.id}">Xóa</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Thống kê
+    const scores = students.map(s => s.score);
+    const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+    document.getElementById('st-count').textContent = students.length;
+    document.getElementById('st-avg').textContent   = avg.toFixed(2);
+    document.getElementById('st-max').textContent   = Math.max(...scores).toFixed(1);
+    document.getElementById('st-min').textContent   = Math.min(...scores).toFixed(1);
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Enter ở ô Điểm → Thêm ──
+  document.getElementById('inp-score').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addStudent();
+  });
+  document.getElementById('inp-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('inp-score').focus();
+  });
+
+  renderTable();
+</script>
+</body>
+</html>

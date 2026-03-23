@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài 2.2 – Form Đặt Hàng</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e2ddd8;
+    --accent: #0d9488;
+    --err: #dc2626;
+    --ok: #16a34a;
+    --err-bg: #fef2f2;
+    --ok-bg: #f0fdf4;
+    --warn: #d97706;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; padding: 40px 16px; }
+  .container { max-width: 600px; margin: 0 auto; }
+  .page-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.875rem; margin-bottom: 28px; }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+
+  /* Field */
+  .field { margin-bottom: 18px; }
+  .field label { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px; color: var(--muted); text-transform: uppercase; margin-bottom: 7px; }
+  .required::after { content: ' *'; color: var(--err); }
+
+  input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    width: 100%; padding: 10px 13px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem;
+    background: var(--bg); color: var(--ink); outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; }
+  input.valid, select.valid, textarea.valid     { border-color: var(--ok);  background: var(--ok-bg); }
+  input.invalid, select.invalid, textarea.invalid { border-color: var(--err); background: var(--err-bg); }
+  textarea { resize: vertical; min-height: 90px; }
+
+  .error-msg { display: none; color: var(--err); font-size: 0.78rem; margin-top: 5px; }
+  .error-msg.show { display: block; }
+
+  .char-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+  .char-count.over { color: var(--err); }
+
+  /* Radio */
+  .radio-group { display: flex; gap: 14px; flex-wrap: wrap; }
+  .radio-item { display: flex; align-items: center; gap: 7px; font-size: 0.875rem; cursor: pointer; }
+  .radio-item input { width: auto; accent-color: var(--accent); cursor: pointer; }
+
+  /* Price box */
+  .price-box {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #f0fdfa; border: 1.5px solid #99f6e4;
+    border-radius: 8px; padding: 14px 16px; margin: 20px 0;
+  }
+  .price-box .label { font-size: 0.8rem; font-weight: 600; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
+  .price-box .amount { font-family: 'IBM Plex Mono', monospace; font-size: 1.3rem; font-weight: 700; color: #0d9488; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Submit */
+  .btn-submit {
+    width: 100%; padding: 13px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  /* Confirm modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35); backdrop-filter: blur(4px);
+    z-index: 100; place-items: center;
+  }
+  .modal-overlay.show { display: grid; animation: fadeIn 0.2s ease; }
+  .modal {
+    background: var(--surface); border-radius: 14px;
+    padding: 32px; max-width: 420px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+  .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+  .modal-row:last-of-type { border-bottom: none; }
+  .modal-row .k { color: var(--muted); }
+  .modal-row .v { font-weight: 600; text-align: right; }
+  .modal-total { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--border); }
+  .modal-total .k { font-weight: 700; }
+  .modal-total .v { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-confirm { flex: 1; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: 7px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: opacity 0.15s; }
+  .btn-confirm:hover { opacity: 0.88; }
+  .btn-cancel  { flex: 1; padding: 11px; background: var(--bg); color: var(--ink); border: 1.5px solid var(--border); border-radius: 7px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+
+  /* Success */
+  .success-box { display: none; text-align: center; padding: 50px 24px; animation: fadeIn 0.4s ease; }
+  .success-box.show { display: block; }
+  .success-icon { font-size: 3.5rem; margin-bottom: 14px; }
+  .success-box h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .success-box p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
+  .order-code { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--accent); background: #f0fdfa; border: 1.5px solid #99f6e4; padding: 8px 18px; border-radius: 6px; display: inline-block; margin: 14px 0; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <p class="page-label">CSE391 · Bài 2.2</p>
+  <h1>Đặt Hàng Trực Tuyến</h1>
+  <p class="subtitle">Form đặt hàng với validation nâng cao và xác nhận trước khi gửi.</p>
+
+  <!-- Form -->
+  <div class="card" id="form-section">
+    <form id="order-form" novalidate>
+
+      <!-- Sản phẩm -->
+      <div class="field">
+        <label class="required" for="f-product">Tên sản phẩm</label>
+        <select id="f-product">
+          <option value="">-- Chọn sản phẩm --</option>
+          <option value="Áo thun">Áo thun</option>
+          <option value="Quần jeans">Quần jeans</option>
+          <option value="Giày sneaker">Giày sneaker</option>
+          <option value="Túi xách">Túi xách</option>
+          <option value="Đồng hồ">Đồng hồ</option>
+        </select>
+        <span class="error-msg" id="err-product"></span>
+      </div>
+
+      <!-- Số lượng -->
+      <div class="field">
+        <label class="required" for="f-qty">Số lượng</label>
+        <input type="number" id="f-qty" placeholder="1" min="1" max="99">
+        <span class="error-msg" id="err-qty"></span>
+      </div>
+
+      <!-- Tổng tiền -->
+      <div class="price-box">
+        <span class="label">Tổng tiền</span>
+        <span class="amount" id="price-display">—</span>
+      </div>
+
+      <!-- Ngày giao -->
+      <div class="field">
+        <label class="required" for="f-date">Ngày giao hàng</label>
+        <input type="date" id="f-date">
+        <span class="error-msg" id="err-date"></span>
+      </div>
+
+      <!-- Địa chỉ -->
+      <div class="field">
+        <label class="required" for="f-addr">Địa chỉ giao hàng</label>
+        <input type="text" id="f-addr" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
+        <span class="error-msg" id="err-addr"></span>
+      </div>
+
+      <!-- Ghi chú -->
+      <div class="field">
+        <label for="f-note">
+          <span>Ghi chú</span>
+          <span class="char-count" id="char-count">0 / 200</span>
+        </label>
+        <textarea id="f-note" placeholder="Ghi chú thêm cho đơn hàng (không bắt buộc)..."></textarea>
+        <span class="error-msg" id="err-note"></span>
+      </div>
+
+      <hr>
+
+      <!-- Thanh toán -->
+      <div class="field">
+        <label class="required">Phương thức thanh toán</label>
+        <div class="radio-group" id="f-payment">
+          <label class="radio-item"><input type="radio" name="payment" value="COD"> 💵 COD</label>
+          <label class="radio-item"><input type="radio" name="payment" value="Chuyển khoản"> 🏦 Chuyển khoản</label>
+          <label class="radio-item"><input type="radio" name="payment" value="Ví điện tử"> 📱 Ví điện tử</label>
+        </div>
+        <span class="error-msg" id="err-payment"></span>
+      </div>
+
+      <button type="submit" class="btn-submit">Xem xác nhận đơn hàng →</button>
+    </form>
+  </div>
+
+  <!-- Success -->
+  <div class="card success-box" id="success-box">
+    <div class="success-icon">✅</div>
+    <h2>Đặt hàng thành công!</h2>
+    <div class="order-code" id="order-code"></div>
+    <p id="success-detail"></p>
+  </div>
+</div>
+
+<!-- Modal xác nhận -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>📋 Xác nhận đơn hàng</h3>
+    <div class="modal-row"><span class="k">Sản phẩm</span>  <span class="v" id="m-product"></span></div>
+    <div class="modal-row"><span class="k">Số lượng</span>  <span class="v" id="m-qty"></span></div>
+    <div class="modal-row"><span class="k">Ngày giao</span> <span class="v" id="m-date"></span></div>
+    <div class="modal-row"><span class="k">Địa chỉ</span>   <span class="v" id="m-addr" style="max-width:220px"></span></div>
+    <div class="modal-row"><span class="k">Thanh toán</span><span class="v" id="m-pay"></span></div>
+    <div class="modal-total"><span class="k">Tổng tiền</span><span class="v" id="m-total"></span></div>
+    <div class="modal-actions">
+      <button class="btn-cancel"  onclick="closeModal()">Hủy</button>
+      <button class="btn-confirm" onclick="confirmOrder()">Xác nhận đặt hàng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Bảng giá ──
+  const PRICES = {
+    'Áo thun':     150_000,
+    'Quần jeans':  350_000,
+    'Giày sneaker':890_000,
+    'Túi xách':    420_000,
+    'Đồng hồ':    1_200_000,
+  };
+
+  function vnd(n) { return n.toLocaleString('vi-VN') + ' ₫'; }
+
+  // ── Tổng tiền realtime ──
+  function updatePrice() {
+    const prod = document.getElementById('f-product').value;
+    const qty  = parseInt(document.getElementById('f-qty').value) || 0;
+    const el   = document.getElementById('price-display');
+    if (prod && PRICES[prod] && qty > 0) {
+      el.textContent = vnd(PRICES[prod] * qty);
+    } else {
+      el.textContent = '—';
+    }
+  }
+  document.getElementById('f-product').addEventListener('change', updatePrice);
+  document.getElementById('f-qty').addEventListener('input', updatePrice);
+
+  // ── Đếm ký tự ghi chú ──
+  document.getElementById('f-note').addEventListener('input', function() {
+    const len  = this.value.length;
+    const ccEl = document.getElementById('char-count');
+    ccEl.textContent = `${len} / 200`;
+    ccEl.className   = len > 200 ? 'char-count over' : 'char-count';
+    if (len > 200) showError('note', `Ghi chú quá dài (${len}/200 ký tự).`);
+    else clearError('note');
+  });
+
+  // ── Set min/max date ──
+  (function setDateConstraints() {
+    const today = new Date();
+    const max   = new Date(); max.setDate(today.getDate() + 30);
+    const fmt   = d => d.toISOString().split('T')[0];
+    const inp   = document.getElementById('f-date');
+    // +1 ngày từ hôm nay là ngày giao sớm nhất
+    const minD  = new Date(); minD.setDate(today.getDate() + 1);
+    inp.min = fmt(minD);
+    inp.max = fmt(max);
+  })();
+
+  // ── Helpers ──
+  function showError(id, msg) {
+    const e = document.getElementById('err-' + id); e.textContent = msg; e.classList.add('show');
+    const i = document.getElementById('f-' + id);
+    if (i) { i.classList.remove('valid'); i.classList.add('invalid'); }
+  }
+  function clearError(id) {
+    const e = document.getElementById('err-' + id); if(e){e.textContent=''; e.classList.remove('show');}
+    const i = document.getElementById('f-' + id); if(i) i.classList.remove('invalid');
+  }
+  function markValid(id) {
+    clearError(id);
+    const i = document.getElementById('f-' + id); if(i){ i.classList.remove('invalid'); i.classList.add('valid'); }
+  }
+
+  // ── Validate từng trường ──
+  function validateProduct() {
+    const v = document.getElementById('f-product').value;
+    if (!v) { showError('product','Vui lòng chọn sản phẩm.'); return false; }
+    markValid('product'); return true;
+  }
+  function validateQty() {
+    const v = parseInt(document.getElementById('f-qty').value);
+    if (isNaN(v) || v < 1)  { showError('qty','Số lượng tối thiểu là 1.'); return false; }
+    if (v > 99)              { showError('qty','Số lượng tối đa là 99.'); return false; }
+    markValid('qty'); return true;
+  }
+  function validateDate() {
+    const v = document.getElementById('f-date').value;
+    if (!v) { showError('date','Vui lòng chọn ngày giao hàng.'); return false; }
+    const chosen  = new Date(v);
+    const today   = new Date(); today.setHours(0,0,0,0);
+    const maxDate = new Date(); maxDate.setDate(today.getDate() + 30); maxDate.setHours(23,59,59,999);
+    if (chosen <= today)    { showError('date','Ngày giao phải là ngày trong tương lai.'); return false; }
+    if (chosen > maxDate)   { showError('date','Ngày giao không được quá 30 ngày kể từ hôm nay.'); return false; }
+    markValid('date'); return true;
+  }
+  function validateAddr() {
+    const v = document.getElementById('f-addr').value.trim();
+    if (!v)          { showError('addr','Địa chỉ không được để trống.'); return false; }
+    if (v.length<10) { showError('addr','Địa chỉ phải có ít nhất 10 ký tự.'); return false; }
+    markValid('addr'); return true;
+  }
+  function validateNote() {
+    const v = document.getElementById('f-note').value;
+    if (v.length > 200) { showError('note',`Ghi chú quá dài (${v.length}/200 ký tự).`); return false; }
+    clearError('note'); return true;
+  }
+  function validatePayment() {
+    const checked = document.querySelector('input[name="payment"]:checked');
+    if (!checked) { showError('payment','Vui lòng chọn phương thức thanh toán.'); return false; }
+    clearError('payment'); return true;
+  }
+
+  // ── Blur events ──
+  document.getElementById('f-product').addEventListener('blur', validateProduct);
+  document.getElementById('f-qty').addEventListener('blur',  validateQty);
+  document.getElementById('f-date').addEventListener('blur', validateDate);
+  document.getElementById('f-addr').addEventListener('blur', validateAddr);
+  document.querySelectorAll('input[name="payment"]').forEach(r => r.addEventListener('change', validatePayment));
+
+  // ── Clear on input ──
+  ['product','qty','date','addr'].forEach(id => {
+    const el = document.getElementById('f-' + id);
+    if (el) el.addEventListener('input', () => clearError(id));
+  });
+
+  // ── Submit ──
+  document.getElementById('order-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const ok = validateProduct() & validateQty() & validateDate()
+             & validateAddr()    & validateNote() & validatePayment();
+    if (!ok) return;
+    showModal();
+  });
+
+  // ── Modal ──
+  function showModal() {
+    const prod = document.getElementById('f-product').value;
+    const qty  = parseInt(document.getElementById('f-qty').value);
+    const date = document.getElementById('f-date').value;
+    const addr = document.getElementById('f-addr').value.trim();
+    const pay  = document.querySelector('input[name="payment"]:checked').value;
+    const total= PRICES[prod] * qty;
+
+    document.getElementById('m-product').textContent = prod;
+    document.getElementById('m-qty').textContent     = qty + ' cái';
+    document.getElementById('m-date').textContent    = formatDate(date);
+    document.getElementById('m-addr').textContent    = addr;
+    document.getElementById('m-pay').textContent     = pay;
+    document.getElementById('m-total').textContent   = vnd(total);
+
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+  }
+
+  function confirmOrder() {
+    closeModal();
+    const prod  = document.getElementById('f-product').value;
+    const qty   = parseInt(document.getElementById('f-qty').value);
+    const date  = document.getElementById('f-date').value;
+    const total = PRICES[prod] * qty;
+    const code  = 'DH' + Date.now().toString().slice(-8);
+
+    document.getElementById('order-code').textContent  = '#' + code;
+    document.getElementById('success-detail').innerHTML = `
+      <strong>${qty} × ${prod}</strong><br>
+      Tổng: <strong>${vnd(total)}</strong><br>
+      Giao ngày: <strong>${formatDate(date)}</strong>
+    `;
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-box').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function formatDate(str) {
+    const [y,m,d] = str.split('-');
+    return `${d}/${m}/${y}`;
+  }
+</script>
+</body>
+</html>
